@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CheckCircle, X, Copy, Maximize, Trash } from 'lucide-react';
+import { Check, X, Maximize, Copy, Trash } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toaster } from '@/components/ui/sonner';
@@ -32,7 +32,7 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center space-x-2">
             <button className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-              <CheckCircle size={14} className="text-black" />
+              <Check size={14} className="text-black" />
             </button>
             <button className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
               <X size={14} className="text-black" />
@@ -61,7 +61,7 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
           </div>
         </div>
       </div>
-      <div className="script-tag">ScriptAI</div>
+      <div className="absolute top-3 right-3 bg-verse-red text-white text-xs px-2 py-0.5 rounded-sm font-mono z-10">ScriptAI</div>
       <div className="px-3 pt-0 pb-2">
         <h3 className="font-mono text-sm text-gray-300 mb-2">{title}</h3>
         <ScrollArea className="code-scroll-area h-[180px]">
