@@ -77,7 +77,7 @@ export const zombieSpawnerCode = (
       </div>
       <div className="flex space-x-2 text-xs mb-1">
         <span className="text-zinc-500">5</span>
-        <span className="pl-4"><span className="text-yellow-300">GetWorld</span>()-><span className="text-yellow-300">SpawnActor</span>&lt;<span className="text-blue-400">ZombieClass</span>&gt;(<span className="text-orange-300">SpawnLocation</span>, <span className="text-blue-400">FRotator</span>::<span className="text-yellow-300">ZeroRotator</span>)</span>
+        <span className="pl-4"><span className="text-yellow-300">GetWorld</span>()-&gt;<span className="text-yellow-300">SpawnActor</span>&lt;<span className="text-blue-400">ZombieClass</span>&gt;(<span className="text-orange-300">SpawnLocation</span>, <span className="text-blue-400">FRotator</span>::<span className="text-yellow-300">ZeroRotator</span>)</span>
       </div>
       <div className="flex space-x-2 text-xs mb-1">
         <span className="text-zinc-500">6</span>
@@ -112,11 +112,11 @@ export const inventoryTriggerCode = (
       </div>
       <div className="flex space-x-2 text-xs mb-1">
         <span className="text-zinc-500">6</span>
-        <span className="pl-4"><span className="text-blue-400">InventorySphere</span>-><span className="text-yellow-300">InitSphereRadius</span>(<span className="text-green-400">100.0f</span>);</span>
+        <span className="pl-4"><span className="text-blue-400">InventorySphere</span>-&gt;<span className="text-yellow-300">InitSphereRadius</span>(<span className="text-green-400">100.0f</span>);</span>
       </div>
       <div className="flex space-x-2 text-xs mb-1">
         <span className="text-zinc-500">7</span>
-        <span className="pl-4"><span className="text-blue-400">InventorySphere</span>-><span className="text-yellow-300">SetCollisionProfileName</span>(<span className="text-green-400">"Trigger"</span>);</span>
+        <span className="pl-4"><span className="text-blue-400">InventorySphere</span>-&gt;<span className="text-yellow-300">SetCollisionProfileName</span>(<span className="text-green-400">"Trigger"</span>);</span>
       </div>
     </div>
   </>
@@ -186,7 +186,7 @@ export const characterBlueprintCode = (
       </div>
       <div className="flex space-x-2 text-xs mb-1">
         <span className="text-zinc-500">6</span>
-        <span className=""><span className="text-blue-400">CharacterMesh</span>-><span className="text-yellow-300">SetupAttachment</span>(<span className="text-blue-400">CapsuleComponent</span>);</span>
+        <span className=""><span className="text-blue-400">CharacterMesh</span>-&gt;<span className="text-yellow-300">SetupAttachment</span>(<span className="text-blue-400">CapsuleComponent</span>);</span>
       </div>
     </div>
   </>
@@ -238,3 +238,71 @@ export const particleSystemCode = (
     </div>
   </>
 );
+
+export const playerMovementCode = (
+  <>
+    <div className="text-left">
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">1</span>
+        <span className="text-zinc-400">// Verse file</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">2</span>
+        <span className=""><span className="text-blue-400">using</span> <span className="text-purple-400">{ }</span>;</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">3</span>
+        <span className=""></span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">4</span>
+        <span className=""><span className="text-purple-400">class</span> <span className="text-blue-400">YOURNAME_API</span> <span className="text-orange-300">ARealisticCharacter</span> : <span className="text-purple-400">public</span> <span className="text-blue-400">ACharacter</span></span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">5</span>
+        <span className="">{`{`}</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">6</span>
+        <span className="pl-4"><span className="text-blue-400">GENERATED_BODY</span>()</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">7</span>
+        <span className=""></span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">8</span>
+        <span className=""><span className="text-purple-400">public</span>:</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">9</span>
+        <span className="pl-4"><span className="text-orange-300">ARealisticCharacter</span>();</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">10</span>
+        <span className=""></span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">11</span>
+        <span className=""><span className="text-purple-400">protected</span>:</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">12</span>
+        <span className="pl-4"><span className="text-purple-400">virtual</span> <span className="text-purple-400">void</span> <span className="text-yellow-300">BeginPlay</span>() <span className="text-purple-400">override</span>;</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">13</span>
+        <span className="pl-4"><span className="text-purple-400">virtual</span> <span className="text-purple-400">void</span> <span className="text-yellow-300">Tick</span>(<span className="text-purple-400">float</span> <span className="text-orange-300">DeltaTime</span>) <span className="text-purple-400">override</span>;</span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">14</span>
+        <span className=""></span>
+      </div>
+      <div className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">15</span>
+        <span className="pl-4"><span className="text-blue-400">UPROPERTY</span>(<span className="text-orange-300">BlueprintReadOnly</span>, <span className="text-blue-400">Category</span> = <span className="text-green-400">"Movement"</span>)</span>
+      </div>
+    </div>
+  </>
+);
+
