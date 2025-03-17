@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CheckCircle, X, Copy, Maximize } from 'lucide-react';
+import { CheckCircle, X, Copy, Maximize, Trash } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toaster } from '@/components/ui/sonner';
@@ -10,9 +10,10 @@ interface ScriptCardProps {
   title: string;
   code: React.ReactNode;
   className?: string;
+  onDelete?: () => void;
 }
 
-const ScriptCard = ({ title, code, className }: ScriptCardProps) => {
+const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = () => {
@@ -40,13 +41,24 @@ const ScriptCard = ({ title, code, className }: ScriptCardProps) => {
               <Maximize size={14} className="text-white" />
             </button>
           </div>
-          <button 
-            onClick={handleCopy}
-            className="text-zinc-400 hover:text-white transition-colors"
-            aria-label="Copy code"
-          >
-            <Copy size={16} />
-          </button>
+          <div className="flex items-center space-x-2">
+            {onDelete && (
+              <button 
+                onClick={onDelete}
+                className="text-zinc-400 hover:text-red-400 transition-colors"
+                aria-label="Delete script"
+              >
+                <Trash size={16} />
+              </button>
+            )}
+            <button 
+              onClick={handleCopy}
+              className="text-zinc-400 hover:text-white transition-colors"
+              aria-label="Copy code"
+            >
+              <Copy size={16} />
+            </button>
+          </div>
         </div>
       </div>
       <div className="script-tag">ScriptAI</div>

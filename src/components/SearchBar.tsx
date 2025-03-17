@@ -1,9 +1,13 @@
 
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const SearchBar = () => {
+interface SearchBarProps {
+  onAddScript?: () => void;
+}
+
+const SearchBar = ({ onAddScript }: SearchBarProps) => {
   return (
     <div className="w-full max-w-xl mx-auto relative">
       <div className="relative flex items-center">
@@ -14,13 +18,23 @@ const SearchBar = () => {
           placeholder="Search for Verse UEFN scripts (e.g., physics movement, inventory systems)..."
         />
       </div>
-      <div className="mt-4 text-center">
+      <div className="mt-4 flex justify-center space-x-4">
         <Button 
           variant="outline" 
           className="bg-transparent border-verse-blue text-verse-blue hover:bg-verse-blue hover:bg-opacity-10 text-sm font-mono"
         >
           Generate Script /↵
         </Button>
+        
+        {onAddScript && (
+          <Button 
+            variant="outline"
+            onClick={onAddScript}
+            className="bg-transparent border-verse-green text-verse-green hover:bg-verse-green hover:bg-opacity-10 text-sm font-mono"
+          >
+            <Plus size={16} className="mr-1" /> Add Script
+          </Button>
+        )}
       </div>
     </div>
   );

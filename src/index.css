@@ -88,11 +88,11 @@
 
 @layer components {
   .script-card {
-    @apply relative border bg-card text-card-foreground rounded-md overflow-hidden shadow-sm;
+    @apply relative border bg-card text-card-foreground rounded-md overflow-hidden shadow-sm hover:shadow-md hover:border-zinc-700 transition-all;
   }
   
   .script-tag {
-    @apply absolute top-3 right-3 bg-verse-red text-white text-xs px-2 py-0.5 rounded-sm font-mono;
+    @apply absolute top-3 right-3 bg-verse-red text-white text-xs px-2 py-0.5 rounded-sm font-mono z-10;
   }
   
   .code-block {
@@ -100,7 +100,7 @@
   }
   
   .code-scroll-area {
-    @apply rounded-md border border-zinc-800;
+    @apply rounded-md border border-zinc-800 overflow-auto;
   }
   
   .action-button {
