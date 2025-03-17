@@ -99,6 +99,10 @@
     @apply font-mono text-sm bg-black bg-opacity-70 p-4 rounded-md w-full overflow-x-auto text-left;
   }
   
+  .code-scroll-area {
+    @apply rounded-md border border-zinc-800;
+  }
+  
   .action-button {
     @apply absolute top-3 flex items-center justify-center w-6 h-6 rounded;
   }

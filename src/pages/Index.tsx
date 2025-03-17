@@ -9,7 +9,8 @@ import {
   inventoryTriggerCode, 
   gridInventoryCode,
   characterBlueprintCode,
-  particleSystemCode 
+  particleSystemCode,
+  playerMovementCode
 } from '@/data/verseScripts';
 
 const Index = () => {
@@ -27,7 +28,7 @@ const Index = () => {
           </div>
           
           <section className="container mx-auto mt-16">
-            <h3 className="text-left text-zinc-400 mb-6 font-mono">Featured Generations</h3>
+            <h3 className="text-left text-verse-blue mb-6 font-mono border-l-4 border-verse-blue pl-3">Game Mechanics</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               <ScriptCard 
@@ -41,22 +42,33 @@ const Index = () => {
               />
               
               <ScriptCard 
-                title='"create an inventory trigger"'
-                code={inventoryTriggerCode}
+                title='"realistic physics-based player movement"'
+                code={playerMovementCode}
               />
             </div>
             
+            <h3 className="text-left text-verse-green mb-6 font-mono border-l-4 border-verse-green pl-3">UI & Inventory Systems</h3>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <ScriptCard 
-                title='"Create a grid inventory system"'
+                title='"create an inventory trigger"'
+                code={inventoryTriggerCode}
+              />
+              
+              <ScriptCard 
+                title='"create a grid inventory system"'
                 code={gridInventoryCode}
               />
               
               <ScriptCard 
-                title='"blueprint class for a character that can jump, move and animate in a 3D platformer"'
+                title='"blueprint class for a character that can jump, move and animate"'
                 code={characterBlueprintCode}
               />
-              
+            </div>
+            
+            <h3 className="text-left text-verse-red mb-6 font-mono border-l-4 border-verse-red pl-3 mt-12">Visual Effects</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <ScriptCard 
                 title='"custom particle system"'
                 code={particleSystemCode}

@@ -1,7 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CheckCircle, X, Copy, Maximize } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 interface ScriptCardProps {
   title: string;
@@ -10,10 +13,16 @@ interface ScriptCardProps {
 }
 
 const ScriptCard = ({ title, code, className }: ScriptCardProps) => {
+  const [copied, setCopied] = useState(false);
+  
   const handleCopy = () => {
-    // Since our code is complex React elements, we would need a text representation
-    // In a real app, you would store the raw text alongside the formatted version
-    alert("Code copied to clipboard!");
+    // In a real app, you would extract and copy the actual code text
+    setCopied(true);
+    toast.success("Code copied to clipboard!");
+    
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   };
 
   return (
@@ -34,6 +43,7 @@ const ScriptCard = ({ title, code, className }: ScriptCardProps) => {
           <button 
             onClick={handleCopy}
             className="text-zinc-400 hover:text-white transition-colors"
+            aria-label="Copy code"
           >
             <Copy size={16} />
           </button>
@@ -42,9 +52,11 @@ const ScriptCard = ({ title, code, className }: ScriptCardProps) => {
       <div className="script-tag">ScriptAI</div>
       <div className="px-3 pt-0 pb-2">
         <h3 className="font-mono text-sm text-gray-300 mb-2">{title}</h3>
-        <div className="code-block bg-black rounded-md">
-          {code}
-        </div>
+        <ScrollArea className="code-scroll-area h-[180px]">
+          <div className="code-block bg-black rounded-md">
+            {code}
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
