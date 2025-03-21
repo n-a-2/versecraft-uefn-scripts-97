@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Check, X, Maximize, Copy, Trash, Download, Save } from 'lucide-react';
+import { Check, X, Maximize, Copy, Trash, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
@@ -23,13 +23,30 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
     
     if (React.isValidElement(code)) {
       // If it's a valid React element, try to get its text content
-      // This is a simplified approach - for complex elements, we might need a more sophisticated solution
       try {
         const tempElement = document.createElement('div');
         // Create a temporary div and render the React element to it
-        // Note: This is a workaround and might not work for all cases
-        tempElement.innerHTML = code.props.children ? code.props.children.toString() : '';
-        return tempElement.textContent || '';
+        if (code.props && code.props.children) {
+          // Handle Fragment or other elements with children
+          const childrenArray = React.Children.toArray(code.props.children);
+          let text = '';
+          
+          // Extract text from children recursively
+          const extractText = (children: React.ReactNode): string => {
+            if (typeof children === 'string') return children;
+            if (Array.isArray(children)) {
+              return children.map(extractText).join('');
+            }
+            if (React.isValidElement(children) && children.props && children.props.children) {
+              return extractText(children.props.children);
+            }
+            return String(children || '');
+          };
+          
+          text = extractText(childrenArray);
+          return text;
+        }
+        return '';
       } catch (error) {
         console.error('Failed to extract text from React element:', error);
         return '';
@@ -37,7 +54,7 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
     }
     
     // Fallback - convert to string
-    return String(code);
+    return String(code || '');
   };
   
   const handleCopy = () => {

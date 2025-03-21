@@ -33,11 +33,14 @@ interface ScriptData {
 // Function to safely serialize script data for localStorage
 const serializeScriptData = (scripts: ScriptData[]): string => {
   // Convert React nodes to strings for serialization
-  const serializable = scripts.map(script => ({
-    ...script,
-    // Convert ReactNode to string representation if needed
-    code: typeof script.code === 'string' ? script.code : JSON.stringify(script.code)
-  }));
+  const serializable = scripts.map(script => {
+    // Create a serializable version of the script object
+    return {
+      ...script,
+      // Store code as a string to avoid React elements serialization issues
+      code: typeof script.code === 'string' ? script.code : ''
+    };
+  });
   
   return JSON.stringify(serializable);
 };
@@ -241,14 +244,14 @@ const Index = () => {
     if (typeof code === 'string') {
       // Convert string code to formatted JSX
       return (
-        <React.Fragment>
+        <>
           {code.split('\n').map((line, index) => (
             <div key={index} className="flex space-x-2 text-xs mb-1">
               <span className="text-zinc-500">{index + 1}</span>
               <span className="">{line}</span>
             </div>
           ))}
-        </React.Fragment>
+        </>
       );
     }
     // If it's already a React element, return it as is
