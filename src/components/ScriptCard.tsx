@@ -15,21 +15,33 @@ interface ScriptCardProps {
 const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
   const [copied, setCopied] = useState(false);
   
-  const handleCopy = () => {
-    // Extract and copy text
-    let codeText = '';
-    
+  // Helper function to safely convert ReactNode to string
+  const getCodeAsString = (): string => {
     if (typeof code === 'string') {
-      codeText = code;
-    } else {
-      // Get textContent from DOM if code is a ReactNode
-      const tempElement = document.createElement('div');
-      // We need to safely convert ReactNode to string
-      const codeString = code?.toString() || '';
-      tempElement.innerHTML = codeString;
-      codeText = tempElement.textContent || '';
+      return code;
     }
     
+    if (React.isValidElement(code)) {
+      // If it's a valid React element, try to get its text content
+      // This is a simplified approach - for complex elements, we might need a more sophisticated solution
+      try {
+        const tempElement = document.createElement('div');
+        // Create a temporary div and render the React element to it
+        // Note: This is a workaround and might not work for all cases
+        tempElement.innerHTML = code.props.children ? code.props.children.toString() : '';
+        return tempElement.textContent || '';
+      } catch (error) {
+        console.error('Failed to extract text from React element:', error);
+        return '';
+      }
+    }
+    
+    // Fallback - convert to string
+    return String(code);
+  };
+  
+  const handleCopy = () => {
+    const codeText = getCodeAsString();
     navigator.clipboard.writeText(codeText);
     setCopied(true);
     toast.success("Code copied to clipboard!");
@@ -40,20 +52,7 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
   };
   
   const handleDownload = () => {
-    // Extract code and create downloadable file
-    let codeText = '';
-    
-    if (typeof code === 'string') {
-      codeText = code;
-    } else {
-      // Get textContent from DOM if code is a ReactNode
-      const tempElement = document.createElement('div');
-      // We need to safely convert ReactNode to string
-      const codeString = code?.toString() || '';
-      tempElement.innerHTML = codeString;
-      codeText = tempElement.textContent || '';
-    }
-    
+    const codeText = getCodeAsString();
     const blob = new Blob([codeText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     

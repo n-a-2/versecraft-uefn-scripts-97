@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ScriptCard from '@/components/ScriptCard';
 import SearchBar from '@/components/SearchBar';
@@ -25,7 +26,7 @@ import AIService from '@/services/aiService';
 interface ScriptData {
   id: string;
   title: string;
-  code: React.ReactNode;
+  code: string | React.ReactNode; // This can be either a string or ReactNode
   category: 'mechanics' | 'ui-inventory' | 'visual';
 }
 
@@ -35,7 +36,7 @@ const serializeScriptData = (scripts: ScriptData[]): string => {
   const serializable = scripts.map(script => ({
     ...script,
     // Convert ReactNode to string representation if needed
-    code: typeof script.code === 'string' ? script.code : String(script.code)
+    code: typeof script.code === 'string' ? script.code : JSON.stringify(script.code)
   }));
   
   return JSON.stringify(serializable);
@@ -238,17 +239,19 @@ const Index = () => {
   // Function to format code for display
   const formatCodeForDisplay = (code: React.ReactNode | string): React.ReactNode => {
     if (typeof code === 'string') {
+      // Convert string code to formatted JSX
       return (
-        <div className="text-left">
+        <React.Fragment>
           {code.split('\n').map((line, index) => (
             <div key={index} className="flex space-x-2 text-xs mb-1">
               <span className="text-zinc-500">{index + 1}</span>
               <span className="">{line}</span>
             </div>
           ))}
-        </div>
+        </React.Fragment>
       );
     }
+    // If it's already a React element, return it as is
     return code;
   };
 
