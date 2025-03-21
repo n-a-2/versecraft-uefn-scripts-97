@@ -22,29 +22,31 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
     }
     
     if (React.isValidElement(code)) {
-      // If it's a valid React element, try to get its text content
       try {
-        const tempElement = document.createElement('div');
-        // Create a temporary div and render the React element to it
+        // Handle Fragment or other elements with children
         if (code.props && code.props.children) {
-          // Handle Fragment or other elements with children
-          const childrenArray = React.Children.toArray(code.props.children);
-          let text = '';
-          
-          // Extract text from children recursively
-          const extractText = (children: React.ReactNode): string => {
-            if (typeof children === 'string') return children;
-            if (Array.isArray(children)) {
-              return children.map(extractText).join('');
+          const extractText = (node: React.ReactNode): string => {
+            if (node === null || node === undefined) return '';
+            
+            if (typeof node === 'string') return node;
+            if (typeof node === 'number') return String(node);
+            
+            if (Array.isArray(node)) {
+              return node.map(extractText).join('');
             }
-            if (React.isValidElement(children) && children.props && children.props.children) {
-              return extractText(children.props.children);
+            
+            if (React.isValidElement(node)) {
+              if (node.props && node.props.children) {
+                return extractText(node.props.children);
+              }
+              return '';
             }
-            return String(children || '');
+            
+            // Fallback
+            return String(node);
           };
           
-          text = extractText(childrenArray);
-          return text;
+          return extractText(code.props.children);
         }
         return '';
       } catch (error) {
@@ -81,6 +83,33 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
     document.body.removeChild(a);
     
     toast.success("Script downloaded successfully!");
+  };
+
+  // Function to safely render the code content
+  const renderCodeContent = () => {
+    // If it's already wrapped in a component with proper rendering structure, use it
+    if (React.isValidElement(code)) {
+      return code;
+    }
+    
+    // If it's a string, format it with line numbers
+    if (typeof code === 'string') {
+      return code.split('\n').map((line, index) => (
+        <div key={index} className="flex space-x-2 text-xs mb-1">
+          <span className="text-zinc-500">{index + 1}</span>
+          <span className="">{line}</span>
+        </div>
+      ));
+    }
+    
+    // Fallback - convert to string and format
+    const stringCode = String(code || '');
+    return stringCode.split('\n').map((line, index) => (
+      <div key={index} className="flex space-x-2 text-xs mb-1">
+        <span className="text-zinc-500">{index + 1}</span>
+        <span className="">{line}</span>
+      </div>
+    ));
   };
 
   return (
@@ -131,7 +160,7 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
         <h3 className="font-mono text-sm text-gray-300 mb-2">{title}</h3>
         <ScrollArea className="code-scroll-area h-[180px]">
           <div className="code-block bg-black rounded-md">
-            {code}
+            {renderCodeContent()}
           </div>
         </ScrollArea>
       </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ScriptCard from '@/components/ScriptCard';
 import SearchBar from '@/components/SearchBar';
@@ -239,25 +238,6 @@ const Index = () => {
     }
   };
 
-  // Function to format code for display
-  const formatCodeForDisplay = (code: React.ReactNode | string): React.ReactNode => {
-    if (typeof code === 'string') {
-      // Convert string code to formatted JSX
-      return (
-        <>
-          {code.split('\n').map((line, index) => (
-            <div key={index} className="flex space-x-2 text-xs mb-1">
-              <span className="text-zinc-500">{index + 1}</span>
-              <span className="">{line}</span>
-            </div>
-          ))}
-        </>
-      );
-    }
-    // If it's already a React element, return it as is
-    return code;
-  };
-
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Header onOpenSettings={() => setIsSettingsOpen(true)} />
@@ -282,7 +262,7 @@ const Index = () => {
                 <ScriptCard 
                   key={script.id}
                   title={script.title}
-                  code={formatCodeForDisplay(script.code)}
+                  code={script.code}
                   onDelete={() => handleDeleteScript(script.id)}
                 />
               ))}
@@ -295,7 +275,7 @@ const Index = () => {
                 <ScriptCard 
                   key={script.id}
                   title={script.title}
-                  code={formatCodeForDisplay(script.code)}
+                  code={script.code}
                   onDelete={() => handleDeleteScript(script.id)}
                 />
               ))}
@@ -308,7 +288,7 @@ const Index = () => {
                 <ScriptCard 
                   key={script.id}
                   title={script.title}
-                  code={formatCodeForDisplay(script.code)}
+                  code={script.code}
                   onDelete={() => handleDeleteScript(script.id)}
                 />
               ))}
