@@ -25,6 +25,13 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				black: '#000000',
+				'eerie-black': '#1b1b1b',
+				'chinese-black': '#141414',
+				'night-rider': '#2e2e2e',
+				'chinese-white': '#e1e1e1',
+				'anti-flash-white': '#f3f3f3',
+				white: '#ffffff',
 				verse: {
 					red: '#FF3D44',
 					green: '#00FF38',
@@ -69,6 +76,10 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			fontFamily: {
+				mono: ['Fira Code', 'monospace'],
+				sans: ['Montserrat', 'sans-serif'],
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
@@ -90,11 +101,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						opacity: '1',
+						boxShadow: '0 0 10px rgba(255, 61, 68, 0.6)'
+					},
+					'50%': { 
+						opacity: '0.7',
+						boxShadow: '0 0 15px rgba(255, 61, 68, 0.4)'
+					},
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s infinite ease-in-out'
 			}
 		}
 	},

@@ -1,6 +1,9 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -42,6 +45,15 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Custom color scheme */
+    --black: #000000;
+    --eerie-black: #1b1b1b;
+    --chinese-black: #141414;
+    --night-rider: #2e2e2e;
+    --chinese-white: #e1e1e1;
+    --anti-flash-white: #f3f3f3;
+    --white: #ffffff;
   }
 
   .dark {
@@ -81,13 +93,31 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-black text-foreground;
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+  
+  .font-mono {
+    font-family: 'Fira Code', monospace;
+  }
+  
+  .headline {
+    @apply relative font-mono;
+  }
+  
+  .headline::after {
+    content: '"N"';
+    @apply absolute -top-4 -right-4 text-xs text-verse-red opacity-75;
   }
 }
 
 @layer components {
   .script-card {
-    @apply relative border bg-card text-card-foreground rounded-md overflow-hidden shadow-sm hover:shadow-md hover:border-zinc-700 transition-all;
+    @apply relative border bg-eerie-black text-card-foreground rounded-md overflow-hidden shadow-sm hover:shadow-md hover:border-zinc-700 transition-all;
   }
   
   .script-tag {
@@ -95,7 +125,7 @@
   }
   
   .code-block {
-    @apply font-mono text-sm bg-black bg-opacity-70 p-4 rounded-md w-full overflow-x-auto text-left;
+    @apply font-mono text-sm bg-chinese-black bg-opacity-90 p-4 rounded-md w-full overflow-x-auto text-left;
   }
   
   .code-scroll-area {
@@ -128,5 +158,32 @@
   
   .variable {
     @apply text-orange-300;
+  }
+  
+  /* Custom scrollbar for code blocks */
+  .code-scroll-area::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+  
+  .code-scroll-area::-webkit-scrollbar-track {
+    @apply bg-chinese-black rounded-md;
+  }
+  
+  .code-scroll-area::-webkit-scrollbar-thumb {
+    @apply bg-night-rider rounded-md hover:bg-zinc-600 transition-colors;
+  }
+  
+  /* Button styles */
+  .ai-button {
+    @apply relative overflow-hidden bg-gradient-to-r from-verse-blue to-verse-blue/70 text-white py-2 px-4 rounded-md font-mono text-sm transition-all;
+  }
+  
+  .ai-button::after {
+    content: '';
+    @apply absolute inset-0 bg-white opacity-0 transition-opacity;
+  }
+  
+  .ai-button:hover::after {
+    @apply opacity-10;
   }
 }

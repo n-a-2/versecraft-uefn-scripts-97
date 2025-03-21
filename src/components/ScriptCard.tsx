@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
-import { Check, X, Maximize, Copy, Trash } from 'lucide-react';
+import { Check, X, Maximize, Copy, Trash, Download, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 
 interface ScriptCardProps {
@@ -17,7 +16,9 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = () => {
-    // In a real app, you would extract and copy the actual code text
+    // Extract and copy text
+    const codeText = typeof code === 'string' ? code : document.querySelector('.code-block')?.textContent || '';
+    navigator.clipboard.writeText(codeText);
     setCopied(true);
     toast.success("Code copied to clipboard!");
     
@@ -25,9 +26,25 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
       setCopied(false);
     }, 2000);
   };
+  
+  const handleDownload = () => {
+    // Extract code and create downloadable file
+    const codeText = typeof code === 'string' ? code : document.querySelector('.code-block')?.textContent || '';
+    const blob = new Blob([codeText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.replace(/["']/g, '')}.verse`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    toast.success("Script downloaded successfully!");
+  };
 
   return (
-    <div className={cn("script-card bg-zinc-900 border border-zinc-800 rounded-md overflow-hidden", className)}>
+    <div className={cn("script-card relative bg-zinc-900 border border-zinc-800 rounded-md overflow-hidden shadow-md hover:shadow-lg hover:border-zinc-700 transition-all", className)}>
       <div className="p-2 pb-0">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center space-x-2">
@@ -41,6 +58,7 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
               <Maximize size={14} className="text-white" />
             </button>
           </div>
+          
           <div className="flex items-center space-x-2">
             {onDelete && (
               <button 
@@ -51,6 +69,13 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
                 <Trash size={16} />
               </button>
             )}
+            <button 
+              onClick={handleDownload}
+              className="text-zinc-400 hover:text-verse-blue transition-colors"
+              aria-label="Download code"
+            >
+              <Download size={16} />
+            </button>
             <button 
               onClick={handleCopy}
               className="text-zinc-400 hover:text-white transition-colors"

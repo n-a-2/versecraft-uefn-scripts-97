@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ScriptCard from '@/components/ScriptCard';
 import SearchBar from '@/components/SearchBar';
 import Header from '@/components/Header';
+import Settings from '@/components/Settings';
 import { 
   weatherSystemCode, 
   zombieSpawnerCode, 
@@ -18,7 +19,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import AIService from '@/services/aiService';
 
 // Type for our script data
 interface ScriptData {
@@ -75,11 +78,38 @@ const Index = () => {
     }
   ];
 
-  const [scripts, setScripts] = useState<ScriptData[]>(initialScripts);
+  const [scripts, setScripts] = useState<ScriptData[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [newScriptTitle, setNewScriptTitle] = useState('');
   const [newScriptCategory, setNewScriptCategory] = useState<ScriptData['category']>('mechanics');
   const [newScriptCode, setNewScriptCode] = useState('');
+  const [aiService, setAiService] = useState<AIService | null>(null);
+
+  // Load scripts from localStorage or use initial scripts
+  useEffect(() => {
+    const savedScripts = localStorage.getItem('verse_scripts');
+    if (savedScripts) {
+      try {
+        setScripts(JSON.parse(savedScripts));
+      } catch (error) {
+        console.error("Error parsing saved scripts:", error);
+        setScripts(initialScripts);
+        // Fallback to initial scripts if parsing fails
+        localStorage.setItem('verse_scripts', JSON.stringify(initialScripts));
+      }
+    } else {
+      setScripts(initialScripts);
+      // Initialize localStorage with initial scripts
+      localStorage.setItem('verse_scripts', JSON.stringify(initialScripts));
+    }
+    
+    // Initialize AI service with API key if available
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (apiKey) {
+      setAiService(new AIService(apiKey));
+    }
+  }, []);
 
   // Filter scripts by category
   const mechanicsScripts = scripts.filter(script => script.category === 'mechanics');
@@ -91,7 +121,9 @@ const Index = () => {
   };
 
   const handleDeleteScript = (id: string) => {
-    setScripts(scripts.filter(script => script.id !== id));
+    const updatedScripts = scripts.filter(script => script.id !== id);
+    setScripts(updatedScripts);
+    localStorage.setItem('verse_scripts', JSON.stringify(updatedScripts));
     toast.success("Script removed successfully!");
   };
 
@@ -124,7 +156,11 @@ const Index = () => {
     };
 
     // Add new script to the list
-    setScripts([...scripts, newScript]);
+    const updatedScripts = [...scripts, newScript];
+    setScripts(updatedScripts);
+    
+    // Save to localStorage
+    localStorage.setItem('verse_scripts', JSON.stringify(updatedScripts));
     
     // Reset form and close dialog
     setNewScriptTitle('');
@@ -133,21 +169,76 @@ const Index = () => {
     toast.success("New script added successfully!");
   };
 
+  const handleGenerateScript = async (prompt: string) => {
+    // Update AI service with latest API key
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) {
+      toast.error("API key is not set. Please set a valid Gemini API key.");
+      return;
+    }
+    
+    // Create or update AI service
+    const service = aiService || new AIService(apiKey);
+    setAiService(service);
+    
+    toast.loading("Generating Verse code...", { id: "generating" });
+    
+    try {
+      const result = await service.generateCode({ prompt });
+      
+      if (result) {
+        // Create new script from generated code
+        const newScript: ScriptData = {
+          id: `script-${Date.now()}`,
+          title: `"${prompt}"`,
+          code: (
+            <div className="text-left">
+              {result.content.split('\n').map((line, index) => (
+                <div key={index} className="flex space-x-2 text-xs mb-1">
+                  <span className="text-zinc-500">{index + 1}</span>
+                  <span className="">{line}</span>
+                </div>
+              ))}
+            </div>
+          ),
+          category: 'mechanics' // Default category
+        };
+        
+        // Add new script to the list
+        const updatedScripts = [...scripts, newScript];
+        setScripts(updatedScripts);
+        
+        // Save to localStorage
+        localStorage.setItem('verse_scripts', JSON.stringify(updatedScripts));
+        
+        toast.success("Code generated successfully!", { id: "generating" });
+      } else {
+        toast.error("Failed to generate code. Please try again.", { id: "generating" });
+      }
+    } catch (error) {
+      console.error("Error generating code:", error);
+      toast.error("An error occurred during code generation.", { id: "generating" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      <Header />
+      <Header onOpenSettings={() => setIsSettingsOpen(true)} />
       
       <main className="flex-1">
         <div className="py-16 text-center">
-          <h1 className="text-5xl font-mono mb-2">Verse Library</h1>
-          <h2 className="text-xl text-zinc-400 mb-8">Search Engine for AI Generated Verse Scripts</h2>
+          <h1 className="text-5xl font-mono mb-2 headline">Verse Library</h1>
+          <h2 className="text-xl text-zinc-400 mb-8">AI-Powered Engine for UEFN Verse Scripts</h2>
           
           <div className="container max-w-xl mx-auto mb-12">
-            <SearchBar onAddScript={handleAddScript} />
+            <SearchBar 
+              onAddScript={handleAddScript} 
+              onGenerateScript={handleGenerateScript}
+            />
           </div>
           
           <section className="container mx-auto mt-16">
-            <h3 className="text-left text-verse-blue mb-6 font-mono border-l-4 border-verse-blue pl-3">Game Mechanics</h3>
+            <h3 className="text-left text-verse-blue mb-6 font-mono border-l-4 border-verse-blue pl-3 headline">Game Mechanics</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               {mechanicsScripts.map(script => (
@@ -160,7 +251,7 @@ const Index = () => {
               ))}
             </div>
             
-            <h3 className="text-left text-verse-green mb-6 font-mono border-l-4 border-verse-green pl-3">UI & Inventory Systems</h3>
+            <h3 className="text-left text-verse-green mb-6 font-mono border-l-4 border-verse-green pl-3 headline">UI & Inventory Systems</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {uiInventoryScripts.map(script => (
@@ -173,7 +264,7 @@ const Index = () => {
               ))}
             </div>
             
-            <h3 className="text-left text-verse-red mb-6 font-mono border-l-4 border-verse-red pl-3 mt-12">Visual Effects</h3>
+            <h3 className="text-left text-verse-red mb-6 font-mono border-l-4 border-verse-red pl-3 mt-12 headline">Visual Effects</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {visualScripts.map(script => (
@@ -191,11 +282,13 @@ const Index = () => {
       
       <footer className="border-t border-zinc-800 py-4">
         <div className="container mx-auto flex justify-between items-center text-sm">
-          <div className="text-zinc-500">© 2023 VerseCraft</div>
+          <div className="text-zinc-500">© 2023 VerseCraft | github@nn6n</div>
           <div>
-            <a href="#" className="text-zinc-500 hover:text-white">Terms</a>
+            <a href="https://github.com/i27n/AiAgent-UEFN" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white">GitHub</a>
             <span className="mx-2 text-zinc-700">•</span>
-            <a href="#" className="text-zinc-500 hover:text-white">Privacy</a>
+            <a href="https://verse.fncwiki.com" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white">Verse Docs</a>
+            <span className="mx-2 text-zinc-700">•</span>
+            <a href="#" className="text-zinc-500 hover:text-white">Terms</a>
           </div>
         </div>
       </footer>
@@ -204,7 +297,7 @@ const Index = () => {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
           <DialogHeader>
-            <DialogTitle className="text-white">Add New Verse Script</DialogTitle>
+            <DialogTitle className="text-white headline">Add New Verse Script</DialogTitle>
             <DialogDescription className="text-zinc-400">
               Enter the details of your UEFN Verse script below.
             </DialogDescription>
@@ -258,6 +351,9 @@ const Index = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Settings component */}
+      <Settings open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
     </div>
   );
 };
