@@ -17,7 +17,19 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
   
   const handleCopy = () => {
     // Extract and copy text
-    const codeText = typeof code === 'string' ? code : document.querySelector('.code-block')?.textContent || '';
+    let codeText = '';
+    
+    if (typeof code === 'string') {
+      codeText = code;
+    } else {
+      // Get textContent from DOM if code is a ReactNode
+      const tempElement = document.createElement('div');
+      // We need to safely convert ReactNode to string
+      const codeString = code?.toString() || '';
+      tempElement.innerHTML = codeString;
+      codeText = tempElement.textContent || '';
+    }
+    
     navigator.clipboard.writeText(codeText);
     setCopied(true);
     toast.success("Code copied to clipboard!");
@@ -29,7 +41,19 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
   
   const handleDownload = () => {
     // Extract code and create downloadable file
-    const codeText = typeof code === 'string' ? code : document.querySelector('.code-block')?.textContent || '';
+    let codeText = '';
+    
+    if (typeof code === 'string') {
+      codeText = code;
+    } else {
+      // Get textContent from DOM if code is a ReactNode
+      const tempElement = document.createElement('div');
+      // We need to safely convert ReactNode to string
+      const codeString = code?.toString() || '';
+      tempElement.innerHTML = codeString;
+      codeText = tempElement.textContent || '';
+    }
+    
     const blob = new Blob([codeText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     

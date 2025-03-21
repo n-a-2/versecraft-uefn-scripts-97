@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ScriptCard from '@/components/ScriptCard';
 import SearchBar from '@/components/SearchBar';
@@ -19,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import AIService from '@/services/aiService';
 
@@ -30,6 +28,33 @@ interface ScriptData {
   code: React.ReactNode;
   category: 'mechanics' | 'ui-inventory' | 'visual';
 }
+
+// Function to safely serialize script data for localStorage
+const serializeScriptData = (scripts: ScriptData[]): string => {
+  // Convert React nodes to strings for serialization
+  const serializable = scripts.map(script => ({
+    ...script,
+    // Convert ReactNode to string representation if needed
+    code: typeof script.code === 'string' ? script.code : String(script.code)
+  }));
+  
+  return JSON.stringify(serializable);
+};
+
+// Function to deserialize script data from localStorage
+const deserializeScriptData = (serialized: string): ScriptData[] => {
+  try {
+    const parsed = JSON.parse(serialized);
+    return parsed.map((item: any) => ({
+      ...item,
+      // Keep code as string for now, will be converted when displayed
+      code: item.code
+    }));
+  } catch (error) {
+    console.error("Error parsing saved scripts:", error);
+    return [];
+  }
+};
 
 const Index = () => {
   // Initial scripts organized by category
@@ -91,17 +116,24 @@ const Index = () => {
     const savedScripts = localStorage.getItem('verse_scripts');
     if (savedScripts) {
       try {
-        setScripts(JSON.parse(savedScripts));
+        const parsedScripts = deserializeScriptData(savedScripts);
+        if (parsedScripts.length > 0) {
+          setScripts(parsedScripts);
+        } else {
+          // Fallback to initial scripts if parsing results in empty array
+          setScripts(initialScripts);
+          localStorage.setItem('verse_scripts', serializeScriptData(initialScripts));
+        }
       } catch (error) {
-        console.error("Error parsing saved scripts:", error);
+        console.error("Error handling saved scripts:", error);
         setScripts(initialScripts);
         // Fallback to initial scripts if parsing fails
-        localStorage.setItem('verse_scripts', JSON.stringify(initialScripts));
+        localStorage.setItem('verse_scripts', serializeScriptData(initialScripts));
       }
     } else {
       setScripts(initialScripts);
       // Initialize localStorage with initial scripts
-      localStorage.setItem('verse_scripts', JSON.stringify(initialScripts));
+      localStorage.setItem('verse_scripts', serializeScriptData(initialScripts));
     }
     
     // Initialize AI service with API key if available
@@ -123,7 +155,7 @@ const Index = () => {
   const handleDeleteScript = (id: string) => {
     const updatedScripts = scripts.filter(script => script.id !== id);
     setScripts(updatedScripts);
-    localStorage.setItem('verse_scripts', JSON.stringify(updatedScripts));
+    localStorage.setItem('verse_scripts', serializeScriptData(updatedScripts));
     toast.success("Script removed successfully!");
   };
 
@@ -142,16 +174,7 @@ const Index = () => {
     const newScript: ScriptData = {
       id: `script-${Date.now()}`,
       title: `"${newScriptTitle}"`,
-      code: (
-        <div className="text-left">
-          {newScriptCode.split('\n').map((line, index) => (
-            <div key={index} className="flex space-x-2 text-xs mb-1">
-              <span className="text-zinc-500">{index + 1}</span>
-              <span className="">{line}</span>
-            </div>
-          ))}
-        </div>
-      ),
+      code: newScriptCode,
       category: newScriptCategory
     };
 
@@ -160,7 +183,7 @@ const Index = () => {
     setScripts(updatedScripts);
     
     // Save to localStorage
-    localStorage.setItem('verse_scripts', JSON.stringify(updatedScripts));
+    localStorage.setItem('verse_scripts', serializeScriptData(updatedScripts));
     
     // Reset form and close dialog
     setNewScriptTitle('');
@@ -191,16 +214,7 @@ const Index = () => {
         const newScript: ScriptData = {
           id: `script-${Date.now()}`,
           title: `"${prompt}"`,
-          code: (
-            <div className="text-left">
-              {result.content.split('\n').map((line, index) => (
-                <div key={index} className="flex space-x-2 text-xs mb-1">
-                  <span className="text-zinc-500">{index + 1}</span>
-                  <span className="">{line}</span>
-                </div>
-              ))}
-            </div>
-          ),
+          code: result.content,
           category: 'mechanics' // Default category
         };
         
@@ -209,7 +223,7 @@ const Index = () => {
         setScripts(updatedScripts);
         
         // Save to localStorage
-        localStorage.setItem('verse_scripts', JSON.stringify(updatedScripts));
+        localStorage.setItem('verse_scripts', serializeScriptData(updatedScripts));
         
         toast.success("Code generated successfully!", { id: "generating" });
       } else {
@@ -219,6 +233,23 @@ const Index = () => {
       console.error("Error generating code:", error);
       toast.error("An error occurred during code generation.", { id: "generating" });
     }
+  };
+
+  // Function to format code for display
+  const formatCodeForDisplay = (code: React.ReactNode | string): React.ReactNode => {
+    if (typeof code === 'string') {
+      return (
+        <div className="text-left">
+          {code.split('\n').map((line, index) => (
+            <div key={index} className="flex space-x-2 text-xs mb-1">
+              <span className="text-zinc-500">{index + 1}</span>
+              <span className="">{line}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return code;
   };
 
   return (
@@ -245,7 +276,7 @@ const Index = () => {
                 <ScriptCard 
                   key={script.id}
                   title={script.title}
-                  code={script.code}
+                  code={formatCodeForDisplay(script.code)}
                   onDelete={() => handleDeleteScript(script.id)}
                 />
               ))}
@@ -258,7 +289,7 @@ const Index = () => {
                 <ScriptCard 
                   key={script.id}
                   title={script.title}
-                  code={script.code}
+                  code={formatCodeForDisplay(script.code)}
                   onDelete={() => handleDeleteScript(script.id)}
                 />
               ))}
@@ -271,7 +302,7 @@ const Index = () => {
                 <ScriptCard 
                   key={script.id}
                   title={script.title}
-                  code={script.code}
+                  code={formatCodeForDisplay(script.code)}
                   onDelete={() => handleDeleteScript(script.id)}
                 />
               ))}
