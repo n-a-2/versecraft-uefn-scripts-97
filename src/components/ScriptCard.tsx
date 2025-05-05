@@ -10,9 +10,10 @@ interface ScriptCardProps {
   code: React.ReactNode;
   className?: string;
   onDelete?: () => void;
+  onClick?: () => void;
 }
 
-const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
+const ScriptCard = ({ title, code, className, onDelete, onClick }: ScriptCardProps) => {
   const [copied, setCopied] = useState(false);
   
   // Helper function to safely convert ReactNode to string
@@ -59,7 +60,10 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
     return String(code || '');
   };
   
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent) => {
+    // Prevent the card click event
+    e.stopPropagation();
+    
     const codeText = getCodeAsString();
     navigator.clipboard.writeText(codeText);
     setCopied(true);
@@ -70,7 +74,10 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
     }, 2000);
   };
   
-  const handleDownload = () => {
+  const handleDownload = (e: React.MouseEvent) => {
+    // Prevent the card click event
+    e.stopPropagation();
+    
     const codeText = getCodeAsString();
     const blob = new Blob([codeText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -83,6 +90,15 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
     document.body.removeChild(a);
     
     toast.success("Script downloaded successfully!");
+  };
+  
+  const handleDelete = (e: React.MouseEvent) => {
+    // Prevent the card click event
+    e.stopPropagation();
+    
+    if (onDelete) {
+      onDelete();
+    }
   };
 
   // Function to safely render the code content
@@ -113,7 +129,13 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
   };
 
   return (
-    <div className={cn("script-card relative bg-zinc-900 border border-zinc-800 rounded-md overflow-hidden shadow-md hover:shadow-lg hover:border-zinc-700 transition-all", className)}>
+    <div 
+      className={cn("script-card relative bg-zinc-900 border border-zinc-800 rounded-md overflow-hidden shadow-md hover:shadow-lg hover:border-zinc-700 transition-all", 
+        onClick ? "cursor-pointer" : "",
+        className
+      )}
+      onClick={onClick}
+    >
       <div className="p-2 pb-0">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center space-x-2">
@@ -131,7 +153,7 @@ const ScriptCard = ({ title, code, className, onDelete }: ScriptCardProps) => {
           <div className="flex items-center space-x-2">
             {onDelete && (
               <button 
-                onClick={onDelete}
+                onClick={handleDelete}
                 className="text-zinc-400 hover:text-red-400 transition-colors"
                 aria-label="Delete script"
               >
