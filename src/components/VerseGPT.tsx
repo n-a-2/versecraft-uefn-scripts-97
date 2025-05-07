@@ -24,7 +24,7 @@ const VerseGPT: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-2.0-pro');
+  const [selectedModel, setSelectedModel] = useState('gemini-pro');
   const [temperature, setTemperature] = useState(0.7);
   const [savedScripts, setSavedScripts] = useState<SavedScript[]>([]);
   const [activeTab, setActiveTab] = useState('generate');
@@ -171,8 +171,8 @@ const VerseGPT: React.FC = () => {
                       <SelectValue placeholder="Select Model" />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                      <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (Faster)</SelectItem>
-                      <SelectItem value="gemini-2.0-pro">Gemini 2.0 Pro (Higher Quality)</SelectItem>
+                      <SelectItem value="gemini-flash">Gemini Flash (Faster)</SelectItem>
+                      <SelectItem value="gemini-pro">Gemini Pro (Higher Quality)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

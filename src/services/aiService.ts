@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 
 // Type definitions for AI service
@@ -41,8 +42,8 @@ export class AIService {
         return null;
       }
       
-      // Default values
-      const model = request.model || 'gemini-2.0-pro';
+      // Default values - Updated to use the correct model names
+      const model = request.model || 'gemini-pro';
       const temperature = request.temperature || 0.7;
       const maxResults = request.maxResults || 1;
       
@@ -116,6 +117,7 @@ export class AIService {
         Return ONLY the Verse code without any explanations before or after it. The code should be fully functional, well-commented, and ready to paste into a .verse file in UEFN.
       `;
       
+      // Use the correct API endpoint and updated model
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
@@ -166,7 +168,7 @@ export class AIService {
       return result;
     } catch (error) {
       console.error("Error generating Verse code:", error);
-      toast.error("Failed to generate Verse code: " + (error instanceof Error ? error.message : "Unknown error"));
+      toast.error("Failed to generate code: " + (error instanceof Error ? error.message : "Unknown error"));
       return null;
     }
   }
@@ -206,7 +208,7 @@ export class AIService {
         title: request.prompt,
         content: result.content,
         prompt: request.prompt,
-        model: request.model || 'gemini-2.0-pro',
+        model: request.model || 'gemini-pro',
         temperature: request.temperature || 0.7,
         timestamp: Date.now()
       };

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -23,7 +22,7 @@ interface SettingsProps {
 
 const Settings = ({ open, onOpenChange }: SettingsProps) => {
   const [darkTheme, setDarkTheme] = useState(true);
-  const [aiModel, setAiModel] = useState('gemini-2.0-flash');
+  const [aiModel, setAiModel] = useState('gemini-pro');
   const [maxResults, setMaxResults] = useState('4');
   const [temperature, setTemperature] = useState('0.7');
   const [syntaxHighlighting, setSyntaxHighlighting] = useState(true);
@@ -117,9 +116,8 @@ const Settings = ({ open, onOpenChange }: SettingsProps) => {
                     <SelectValue placeholder="Select AI model" />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
-                    <SelectItem value="gemini-2.0-pro">Gemini 2.0 Pro</SelectItem>
-                    <SelectItem value="gemini-2.0-ultra">Gemini 2.0 Ultra</SelectItem>
+                    <SelectItem value="gemini-flash">Gemini Flash</SelectItem>
+                    <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-zinc-500">
