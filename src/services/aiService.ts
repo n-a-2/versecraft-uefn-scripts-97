@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 
 // Type definitions for AI service
@@ -42,15 +41,10 @@ export class AIService {
         return null;
       }
       
-      // Fix model names to match the actual API endpoint format
-      let model = request.model || 'gemini-1.5-pro';
+      // Use correct model names that are available in the Gemini API
+      let model = request.model || 'gemini-pro';
       
-      // Ensure model name is in the correct format
-      if (model === 'gemini-flash') {
-        model = 'gemini-1.5-flash';
-      } else if (model === 'gemini-pro') {
-        model = 'gemini-1.5-pro';
-      }
+      // We don't need to adjust the model name as we're using the correct ones now
       
       const temperature = request.temperature || 0.7;
       const maxResults = request.maxResults || 1;
@@ -216,7 +210,7 @@ export class AIService {
         title: request.prompt,
         content: result.content,
         prompt: request.prompt,
-        model: request.model || 'gemini-1.5-pro',
+        model: request.model || 'gemini-pro',
         temperature: request.temperature || 0.7,
         timestamp: Date.now()
       };
