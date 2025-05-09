@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 
 // Type definitions for AI service
@@ -41,11 +42,8 @@ export class AIService {
         return null;
       }
       
-      // Use correct model names that are available in the Gemini API
-      let model = request.model || 'gemini-pro';
-      
-      // We don't need to adjust the model name as we're using the correct ones now
-      
+      // Use the correct model name based on what's available in the Gemini API
+      const model = request.model || 'gemini-1.5-flash';
       const temperature = request.temperature || 0.7;
       const maxResults = request.maxResults || 1;
       
@@ -119,7 +117,10 @@ export class AIService {
         Return ONLY the Verse code without any explanations before or after it. The code should be fully functional, well-commented, and ready to paste into a .verse file in UEFN.
       `;
       
-      // Update to use the correct API endpoint for the model
+      console.log("Using model:", model);
+      
+      // Update to use the correct API endpoint for the Gemini API
+      // Use the generative AI API instead of the previous endpoint
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
@@ -141,14 +142,23 @@ export class AIService {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("API Error:", errorData);
-        toast.error("Error generating Verse code: " + (errorData.error?.message || "Unknown error"));
+        
+        // Provide more specific error messages based on the response code
+        if (response.status === 429) {
+          toast.error("Quota exceeded for your Gemini API key. Please check your Google AI Studio quota limits.");
+        } else if (response.status === 404) {
+          toast.error("Model not found. Updating to the latest supported model names.");
+        } else {
+          toast.error("Error generating Verse code: " + (errorData.error?.message || "Unknown error"));
+        }
+        
         return null;
       }
       
       const data = await response.json();
       
       // Extract generated code from response
-      const generatedText = data.candidates[0]?.content?.parts[0]?.text;
+      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       
       if (!generatedText) {
         toast.error("No Verse code was generated. Please try again with a clearer prompt.");
@@ -210,7 +220,7 @@ export class AIService {
         title: request.prompt,
         content: result.content,
         prompt: request.prompt,
-        model: request.model || 'gemini-pro',
+        model: request.model || 'gemini-1.5-flash',
         temperature: request.temperature || 0.7,
         timestamp: Date.now()
       };

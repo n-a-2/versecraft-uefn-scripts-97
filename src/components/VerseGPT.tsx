@@ -24,7 +24,7 @@ const VerseGPT: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-pro');
+  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
   const [temperature, setTemperature] = useState(0.7);
   const [savedScripts, setSavedScripts] = useState<SavedScript[]>([]);
   const [activeTab, setActiveTab] = useState('generate');
@@ -58,6 +58,7 @@ const VerseGPT: React.FC = () => {
     }
     
     setIsGenerating(true);
+    toast.info("Generating Verse code...");
     
     try {
       const request: GenerationRequest = {
@@ -66,6 +67,7 @@ const VerseGPT: React.FC = () => {
         temperature: temperature,
       };
       
+      console.log("Sending request with model:", selectedModel);
       const result = await aiService.generateCode(request);
       
       if (result) {
@@ -115,6 +117,11 @@ const VerseGPT: React.FC = () => {
 
   const handleSelectPromptExample = (example: string) => {
     setPrompt(example);
+  };
+
+  const handleSaveKey = () => {
+    localStorage.setItem('gemini_api_key', apiKey);
+    toast.success("API key saved successfully!");
   };
 
   return (
@@ -174,8 +181,8 @@ const VerseGPT: React.FC = () => {
                       <SelectValue placeholder="Select Model" />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                      <SelectItem value="gemini-pro">Gemini Pro (Balanced)</SelectItem>
-                      <SelectItem value="gemini-1.5-pro-latest">Gemini 1.5 Pro (Latest)</SelectItem>
+                      <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Faster)</SelectItem>
+                      <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro (Better Quality)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -209,12 +216,16 @@ const VerseGPT: React.FC = () => {
                     type="password"
                     placeholder="AIzaSyB..."
                     value={apiKey}
-                    onChange={(e) => {
-                      setApiKey(e.target.value);
-                      localStorage.setItem('gemini_api_key', e.target.value);
-                    }}
+                    onChange={(e) => setApiKey(e.target.value)}
                     className="bg-zinc-900 border-zinc-700 text-white"
                   />
+                  <Button 
+                    variant="outline"
+                    className="whitespace-nowrap"
+                    onClick={handleSaveKey}
+                  >
+                    Save Key
+                  </Button>
                   <Button 
                     variant="outline"
                     className="whitespace-nowrap"
@@ -224,7 +235,7 @@ const VerseGPT: React.FC = () => {
                   </Button>
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Your API key is stored locally in your browser.
+                  Your API key is stored locally in your browser. Get a key from <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="text-verse-blue hover:underline">Google AI Studio</a>.
                 </p>
               </div>
               
