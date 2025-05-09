@@ -42,8 +42,16 @@ export class AIService {
         return null;
       }
       
-      // Default values - Updated to use the correct model names
-      const model = request.model || 'gemini-pro';
+      // Fix model names to match the actual API endpoint format
+      let model = request.model || 'gemini-1.5-pro';
+      
+      // Ensure model name is in the correct format
+      if (model === 'gemini-flash') {
+        model = 'gemini-1.5-flash';
+      } else if (model === 'gemini-pro') {
+        model = 'gemini-1.5-pro';
+      }
+      
       const temperature = request.temperature || 0.7;
       const maxResults = request.maxResults || 1;
       
@@ -117,7 +125,7 @@ export class AIService {
         Return ONLY the Verse code without any explanations before or after it. The code should be fully functional, well-commented, and ready to paste into a .verse file in UEFN.
       `;
       
-      // Use the correct API endpoint and updated model
+      // Update to use the correct API endpoint for the model
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
@@ -208,7 +216,7 @@ export class AIService {
         title: request.prompt,
         content: result.content,
         prompt: request.prompt,
-        model: request.model || 'gemini-pro',
+        model: request.model || 'gemini-1.5-pro',
         temperature: request.temperature || 0.7,
         timestamp: Date.now()
       };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Brain, Copy, Save, RefreshCw } from 'lucide-react';
@@ -24,7 +23,7 @@ const VerseGPT: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-pro');
+  const [selectedModel, setSelectedModel] = useState('gemini-1.5-pro');
   const [temperature, setTemperature] = useState(0.7);
   const [savedScripts, setSavedScripts] = useState<SavedScript[]>([]);
   const [activeTab, setActiveTab] = useState('generate');
@@ -133,6 +132,7 @@ const VerseGPT: React.FC = () => {
           
           <TabsContent value="generate">
             <div className="space-y-4">
+              {/* Prompt textarea section */}
               <div className="flex flex-col space-y-2">
                 <Label htmlFor="prompt">Describe what you want to create in Verse:</Label>
                 <Textarea
@@ -144,6 +144,7 @@ const VerseGPT: React.FC = () => {
                 />
               </div>
               
+              {/* Example prompts section */}
               <div className="space-y-2">
                 <Label>Example Prompts</Label>
                 <div className="grid grid-cols-1 gap-2">
@@ -160,6 +161,7 @@ const VerseGPT: React.FC = () => {
                 </div>
               </div>
               
+              {/* Model and temperature settings */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="model">AI Model</Label>
@@ -171,8 +173,8 @@ const VerseGPT: React.FC = () => {
                       <SelectValue placeholder="Select Model" />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                      <SelectItem value="gemini-flash">Gemini Flash (Faster)</SelectItem>
-                      <SelectItem value="gemini-pro">Gemini Pro (Higher Quality)</SelectItem>
+                      <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Faster)</SelectItem>
+                      <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro (Higher Quality)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -197,6 +199,7 @@ const VerseGPT: React.FC = () => {
                 </div>
               </div>
               
+              {/* API Key input */}
               <div>
                 <Label htmlFor="apikey">Gemini API Key</Label>
                 <div className="flex items-center gap-2">
@@ -224,6 +227,7 @@ const VerseGPT: React.FC = () => {
                 </p>
               </div>
               
+              {/* Generate button */}
               <Button
                 onClick={handleGenerateCode}
                 disabled={isGenerating || !prompt.trim() || !apiKey}
@@ -242,6 +246,7 @@ const VerseGPT: React.FC = () => {
                 )}
               </Button>
               
+              {/* Generated code display */}
               {generatedCode && (
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
