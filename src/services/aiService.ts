@@ -7,6 +7,7 @@ export interface GenerationRequest {
   model?: string;
   temperature?: number;
   maxResults?: number;
+  insertCode?: string; // New field for code insertion
 }
 
 export interface GenerationResponse {
@@ -48,7 +49,7 @@ export class AIService {
       const maxResults = request.maxResults || 1;
       
       // Create advanced prompt for high-quality Verse code generation
-      const enhancedPrompt = `
+      let enhancedPrompt = `
         You are VerseGPT, a world-class expert in Verse language and a lead developer on the Unreal Engine team at Epic Games, specializing in designing and implementing robust gameplay systems for Fortnite Creative using UEFN. You have deep understanding of all UEFN devices, the Verse API, and performance/safety best practices in the game environment.
 
         Your task is to generate complete, functional, high-quality, and perfectly documented Verse code based on the user's request.
@@ -70,6 +71,8 @@ export class AIService {
         - **Error Handling:** Include robust handling for cases where operations might fail (like trying to get an \`agent\` that might not be a \`fort_character\`, or dealing with devices that might not exist). Use \`if\`, \`[]\`, and \`?\` appropriately.
         - **Performance & Best Practices:** Write code as efficient as possible to avoid negatively impacting game performance. Follow Verse best practices (like avoiding uncontrolled infinite loops, managing \`suspends\`).
         - **Readability and Organization:** Code must be clean, organized, and easy to read and understand for another Verse developer.
+        - **Full Implementation:** Ensure ALL functions, methods, and handlers mentioned or called in the code are fully implemented, not just declared.
+        - **Real-World Usable:** The code should be ready to use in a real UEFN project with all necessary imports and complete functionality.
 
         Here's an example to guide your response:
 
@@ -111,16 +114,32 @@ export class AIService {
                 else:
                     Print("Warning: Triggered by non-player agent")
         \`\`\`
+      `;
+      
+      // Add code insertion logic if provided
+      if (request.insertCode) {
+        enhancedPrompt += `
+          
+        IMPORTANT: The user has provided some code that needs to be included in your response. Please integrate this code into your solution, making any necessary adjustments to ensure it works properly with the rest of your implementation:
+          
+        \`\`\`verse
+        ${request.insertCode}
+        \`\`\`
+          
+        Ensure this code is properly integrated into your complete solution. If there are any issues or improvements needed in this code, make them and explain your changes.
+        `;
+      }
+      
+      enhancedPrompt += `
         
         Now, generate complete, functional Verse code for Fortnite UEFN based on this request: "${request.prompt}"
         
-        Return ONLY the Verse code without any explanations before or after it. The code should be fully functional, well-commented, and ready to paste into a .verse file in UEFN.
+        Return ONLY the Verse code without any explanations before or after it. The code should be fully functional, well-commented, and ready to paste into a .verse file in UEFN. Make sure to implement ALL functions, methods, and handlers mentioned or called in your code, not just declare them.
       `;
       
       console.log("Using model:", model);
       
       // Update to use the correct API endpoint for the Gemini API
-      // Use the generative AI API instead of the previous endpoint
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
@@ -146,8 +165,10 @@ export class AIService {
         // Provide more specific error messages based on the response code
         if (response.status === 429) {
           toast.error("Quota exceeded for your Gemini API key. Please check your Google AI Studio quota limits.");
+        } else if (response.status === 403) {
+          toast.error("API key invalid or unauthorized. Please check your Gemini API key.");
         } else if (response.status === 404) {
-          toast.error("Model not found. Updating to the latest supported model names.");
+          toast.error("Model not found. Try using a supported model name like 'gemini-1.5-flash' or 'gemini-1.5-pro'.");
         } else {
           toast.error("Error generating Verse code: " + (errorData.error?.message || "Unknown error"));
         }

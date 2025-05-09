@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Brain, Copy, Save, RefreshCw } from 'lucide-react';
+import { Loader2, Brain, Copy, Save, RefreshCw, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,10 +18,13 @@ import {
 import CodeEditor from './CodeEditor';
 import ScriptHistory from './ScriptHistory';
 import AIService, { GenerationRequest, SavedScript } from '@/services/aiService';
+import { Switch } from '@/components/ui/switch';
 
 const VerseGPT: React.FC = () => {
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
   const [prompt, setPrompt] = useState('');
+  const [insertCode, setInsertCode] = useState('');
+  const [useCodeInsertion, setUseCodeInsertion] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
@@ -66,6 +69,11 @@ const VerseGPT: React.FC = () => {
         model: selectedModel,
         temperature: temperature,
       };
+      
+      // Add code insertion if enabled and provided
+      if (useCodeInsertion && insertCode.trim()) {
+        request.insertCode = insertCode;
+      }
       
       console.log("Sending request with model:", selectedModel);
       const result = await aiService.generateCode(request);
@@ -150,6 +158,37 @@ const VerseGPT: React.FC = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                 />
+              </div>
+              
+              {/* Code insertion section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="code-insertion" className="flex items-center space-x-2 cursor-pointer">
+                    <span>Include existing code in generation</span>
+                  </Label>
+                  <Switch 
+                    id="code-insertion"
+                    checked={useCodeInsertion}
+                    onCheckedChange={setUseCodeInsertion}
+                  />
+                </div>
+                
+                {useCodeInsertion && (
+                  <div className="space-y-2 mt-2">
+                    <Label htmlFor="insert-code">Verse code to include:</Label>
+                    <Textarea
+                      id="insert-code"
+                      placeholder="# Paste existing Verse code here to integrate it with the generated code..."
+                      className="h-40 bg-zinc-900 border-zinc-700 text-white font-mono resize-none"
+                      value={insertCode}
+                      onChange={(e) => setInsertCode(e.target.value)}
+                    />
+                    <p className="text-xs text-zinc-500">
+                      <FileCode size={14} className="inline mr-1" />
+                      The AI will integrate this code into the generated solution
+                    </p>
+                  </div>
+                )}
               </div>
               
               {/* Example prompts section */}
