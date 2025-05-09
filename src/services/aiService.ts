@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 
 // Type definitions for AI service
@@ -7,7 +6,9 @@ export interface GenerationRequest {
   model?: string;
   temperature?: number;
   maxResults?: number;
-  insertCode?: string; // New field for code insertion
+  insertCode?: string; // Code insertion field
+  continueCode?: string; // Field to continue/enhance existing code
+  editInstructions?: string; // Instructions for editing existing code
 }
 
 export interface GenerationResponse {
@@ -52,7 +53,7 @@ export class AIService {
       let enhancedPrompt = `
         You are VerseGPT, a world-class expert in Verse language and a lead developer on the Unreal Engine team at Epic Games, specializing in designing and implementing robust gameplay systems for Fortnite Creative using UEFN. You have deep understanding of all UEFN devices, the Verse API, and performance/safety best practices in the game environment.
 
-        Your task is to generate complete, functional, high-quality, and perfectly documented Verse code based on the user's request.
+        YOUR TOP PRIORITY is to generate COMPLETE, FUNCTIONAL, and PRODUCTION-READY Verse code. Users expect code they can directly copy and paste into UEFN that will work without modifications or additions.
 
         Before writing any code, analyze the user's request thoroughly. Consider:
         1. What is the ultimate goal of the code? (Functionality)
@@ -62,62 +63,49 @@ export class AIService {
         5. What potential challenges or edge cases in the UEFN context might affect code operation?
 
         The generated code must strictly adhere to the following requirements:
-        - **Syntax:** 100% accurate adherence to Verse language syntax for the latest version of UEFN. Do not include any outdated or unsupported syntax.
+        - **Completeness:** Generate 100% COMPLETE implementations with ALL required functions, methods, and event handlers fully implemented. NEVER leave TODOs or placeholders.
+        - **Syntax:** 100% accurate adherence to Verse language syntax for the latest version of UEFN.
         - **Compilability:** Code must be directly compilable in UEFN without any errors or warnings.
         - **Functionality:** Code must be fully functional and achieve the goal specified in the user's request.
-        - **Structure:** Use a Verse device class structure (\`class(creative_device):\`) by default, unless the user explicitly requests something else (like a standalone function).
-        - **Editable Properties:** Properly use \`@editable\` for properties that should be configurable in the UEFN editor (such as references to other devices, numerical values that might change).
-        - **Comments:** Add detailed explanatory comments for each major part of the code, explaining the purpose, how it works, and why a particular approach was chosen.
-        - **Error Handling:** Include robust handling for cases where operations might fail (like trying to get an \`agent\` that might not be a \`fort_character\`, or dealing with devices that might not exist). Use \`if\`, \`[]\`, and \`?\` appropriately.
-        - **Performance & Best Practices:** Write code as efficient as possible to avoid negatively impacting game performance. Follow Verse best practices (like avoiding uncontrolled infinite loops, managing \`suspends\`).
-        - **Readability and Organization:** Code must be clean, organized, and easy to read and understand for another Verse developer.
-        - **Full Implementation:** Ensure ALL functions, methods, and handlers mentioned or called in the code are fully implemented, not just declared.
-        - **Real-World Usable:** The code should be ready to use in a real UEFN project with all necessary imports and complete functionality.
-
-        Here's an example to guide your response:
-
-        Example Request: Create a device that grants a player gold when they stand on a pressure plate.
-        
-        Verse Code:
-        \`\`\`verse
-        using { /Fortnite.com/Devices }
-        using { /Fortnite.com/Characters }
-        using { /Verse.org/Simulation }
-        
-        # A device that awards gold to players when they step on a pressure plate
-        gold_granter_device := class(creative_device):
-            # Reference to the trigger device that players will step on
-            @editable
-            TriggerPlate : trigger_device = trigger_device{}
-            
-            # Reference to the item granter that will give the gold
-            @editable
-            GoldGranter : item_granter_device = item_granter_device{}
-            
-            # Amount of gold to grant (configure this in the item granter)
-            @editable
-            GoldAmount : int = 10
-            
-            # Setup subscription to the trigger event when the experience starts
-            OnBegin<override>()<suspends>:void =
-                # Subscribe to the trigger event with our handler function
-                TriggerPlate.TriggeredEvent.Subscribe(OnPlayerTriggeredPlate)
-                Print("Gold granter device initialized and ready")
-            
-            # Handler function that runs when a player steps on the plate
-            OnPlayerTriggeredPlate(Agent : agent) : void =
-                # Verify we have a valid Fortnite character
-                if (FortCharacter := Agent.GetFortCharacter[]):
-                    # Grant the item (gold) to the player
-                    GoldGranter.GrantItem(Agent)
-                    Print("Granted {GoldAmount} gold to player")
-                else:
-                    Print("Warning: Triggered by non-player agent")
-        \`\`\`
+        - **Structure:** Use a Verse device class structure (\`class(creative_device):\`) by default, unless the user explicitly requests something else.
+        - **Editable Properties:** Properly use \`@editable\` for properties that should be configurable in the UEFN editor.
+        - **Comments:** Add detailed explanatory comments for each major part of the code.
+        - **Error Handling:** Include robust handling for edge cases using \`if\`, \`[]\`, and \`?\` appropriately.
+        - **Performance & Best Practices:** Write efficient code following Verse best practices.
+        - **Readability and Organization:** Code must be clean, organized, and easy to read.
+        - **Real-World Usable:** The code should be ready to use in a real UEFN project with all necessary imports.
       `;
       
-      // Add code insertion logic if provided
-      if (request.insertCode) {
+      // Handle code continuation or editing if provided
+      if (request.continueCode) {
+        enhancedPrompt += `
+        
+        IMPORTANT: The user has provided existing code that they want you to CONTINUE BUILDING UPON. You must analyze this code and extend it with additional functionality based on the prompt. Maintain the existing structure, naming conventions, and style. DO NOT rewrite what already works:
+        
+        \`\`\`verse
+        ${request.continueCode}
+        \`\`\`
+        
+        Your task is to BUILD UPON this code, adding the functionality described in the prompt: "${request.prompt}". Return the COMPLETE enhanced code with both the original functionality and your additions.
+        `;
+      }
+      // Handle edit instructions if provided
+      else if (request.editInstructions && request.insertCode) {
+        enhancedPrompt += `
+        
+        IMPORTANT: The user has provided existing code that needs to be EDITED according to specific instructions. You must modify this code according to these edit instructions while preserving its overall structure and functionality:
+        
+        \`\`\`verse
+        ${request.insertCode}
+        \`\`\`
+        
+        EDIT INSTRUCTIONS: "${request.editInstructions}"
+        
+        Your task is to MODIFY this code according to the instructions. Return the COMPLETE edited code.
+        `;
+      }
+      // Handle simple code insertion if provided
+      else if (request.insertCode) {
         enhancedPrompt += `
           
         IMPORTANT: The user has provided some code that needs to be included in your response. Please integrate this code into your solution, making any necessary adjustments to ensure it works properly with the rest of your implementation:
@@ -135,6 +123,8 @@ export class AIService {
         Now, generate complete, functional Verse code for Fortnite UEFN based on this request: "${request.prompt}"
         
         Return ONLY the Verse code without any explanations before or after it. The code should be fully functional, well-commented, and ready to paste into a .verse file in UEFN. Make sure to implement ALL functions, methods, and handlers mentioned or called in your code, not just declare them.
+
+        THE ENTIRE SCRIPT must be complete and ready to use without any additional coding. NEVER use placeholders like "// TODO" or "// Implement this". ALWAYS fully implement ALL functionality.
       `;
       
       console.log("Using model:", model);

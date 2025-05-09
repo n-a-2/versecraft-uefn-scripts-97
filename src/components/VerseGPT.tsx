@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Brain, Copy, Save, RefreshCw, FileCode } from 'lucide-react';
+import { Loader2, Brain, Copy, Save, RefreshCw, FileCode, Edit, ArrowRightCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,14 @@ import CodeEditor from './CodeEditor';
 import ScriptHistory from './ScriptHistory';
 import AIService, { GenerationRequest, SavedScript } from '@/services/aiService';
 import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+// Tabs for different code generation modes
+enum GenerationMode {
+  NEW = 'new',
+  CONTINUE = 'continue',
+  EDIT = 'edit'
+}
 
 const VerseGPT: React.FC = () => {
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
@@ -31,6 +39,8 @@ const VerseGPT: React.FC = () => {
   const [temperature, setTemperature] = useState(0.7);
   const [savedScripts, setSavedScripts] = useState<SavedScript[]>([]);
   const [activeTab, setActiveTab] = useState('generate');
+  const [generationMode, setGenerationMode] = useState<GenerationMode>(GenerationMode.NEW);
+  const [editInstructions, setEditInstructions] = useState('');
   
   // Initialize AI service
   const aiService = new AIService(apiKey);
@@ -70,8 +80,24 @@ const VerseGPT: React.FC = () => {
         temperature: temperature,
       };
       
-      // Add code insertion if enabled and provided
-      if (useCodeInsertion && insertCode.trim()) {
+      // Set up request based on generation mode
+      if (generationMode === GenerationMode.CONTINUE) {
+        if (!generatedCode.trim()) {
+          toast.error("There's no code to continue. Please generate code first.");
+          setIsGenerating(false);
+          return;
+        }
+        request.continueCode = generatedCode;
+      } else if (generationMode === GenerationMode.EDIT) {
+        if (!editInstructions.trim()) {
+          toast.error("Please provide edit instructions");
+          setIsGenerating(false);
+          return;
+        }
+        request.editInstructions = editInstructions;
+        request.insertCode = generatedCode || insertCode;
+      } else if (useCodeInsertion && insertCode.trim()) {
+        // For new code with insertion
         request.insertCode = insertCode;
       }
       
@@ -148,65 +174,120 @@ const VerseGPT: React.FC = () => {
           
           <TabsContent value="generate">
             <div className="space-y-4">
+              {/* Generation mode selection */}
+              <div className="space-y-2">
+                <Label>Generation Mode</Label>
+                <RadioGroup 
+                  value={generationMode} 
+                  onValueChange={(value) => setGenerationMode(value as GenerationMode)}
+                  className="flex space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value={GenerationMode.NEW} id="mode-new" />
+                    <Label htmlFor="mode-new" className="cursor-pointer">New Code</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value={GenerationMode.CONTINUE} id="mode-continue" />
+                    <Label htmlFor="mode-continue" className="cursor-pointer">Continue/Enhance</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value={GenerationMode.EDIT} id="mode-edit" />
+                    <Label htmlFor="mode-edit" className="cursor-pointer">Edit Code</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
               {/* Prompt textarea section */}
               <div className="flex flex-col space-y-2">
-                <Label htmlFor="prompt">Describe what you want to create in Verse:</Label>
+                <Label htmlFor="prompt">
+                  {generationMode === GenerationMode.CONTINUE 
+                    ? "Describe what to add to the existing code:"
+                    : generationMode === GenerationMode.EDIT
+                    ? "Describe what you want to create:"
+                    : "Describe what you want to create in Verse:"}
+                </Label>
                 <Textarea
                   id="prompt"
-                  placeholder="Create a weather system that changes over time with rain and lightning effects..."
+                  placeholder={generationMode === GenerationMode.CONTINUE 
+                    ? "Add a day/night cycle to the existing weather system..." 
+                    : generationMode === GenerationMode.EDIT
+                    ? "Describe what you want to create..."
+                    : "Create a weather system that changes over time with rain and lightning effects..."}
                   className="h-32 bg-zinc-900 border-zinc-700 text-white resize-none"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                 />
               </div>
               
-              {/* Code insertion section */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="code-insertion" className="flex items-center space-x-2 cursor-pointer">
-                    <span>Include existing code in generation</span>
-                  </Label>
-                  <Switch 
-                    id="code-insertion"
-                    checked={useCodeInsertion}
-                    onCheckedChange={setUseCodeInsertion}
+              {/* Edit instructions section (only for edit mode) */}
+              {generationMode === GenerationMode.EDIT && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-instructions">Edit Instructions:</Label>
+                  <Textarea
+                    id="edit-instructions"
+                    placeholder="Change the weather duration to 60 seconds, add snow weather type..."
+                    className="h-24 bg-zinc-900 border-zinc-700 text-white resize-none"
+                    value={editInstructions}
+                    onChange={(e) => setEditInstructions(e.target.value)}
                   />
+                  <p className="text-xs text-zinc-500">
+                    <Edit size={14} className="inline mr-1" />
+                    Specify exactly what changes you want to make to the code
+                  </p>
                 </div>
-                
-                {useCodeInsertion && (
-                  <div className="space-y-2 mt-2">
-                    <Label htmlFor="insert-code">Verse code to include:</Label>
-                    <Textarea
-                      id="insert-code"
-                      placeholder="# Paste existing Verse code here to integrate it with the generated code..."
-                      className="h-40 bg-zinc-900 border-zinc-700 text-white font-mono resize-none"
-                      value={insertCode}
-                      onChange={(e) => setInsertCode(e.target.value)}
-                    />
-                    <p className="text-xs text-zinc-500">
-                      <FileCode size={14} className="inline mr-1" />
-                      The AI will integrate this code into the generated solution
-                    </p>
-                  </div>
-                )}
-              </div>
+              )}
               
-              {/* Example prompts section */}
-              <div className="space-y-2">
-                <Label>Example Prompts</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {promptExamples.map((example, index) => (
-                    <button
-                      key={index}
-                      className="text-left p-2 border border-zinc-800 rounded-md hover:bg-zinc-800 text-zinc-300 text-sm transition-colors"
-                      onClick={() => handleSelectPromptExample(example)}
-                    >
-                      <Brain size={14} className="inline mr-2 text-verse-blue" />
-                      {example}
-                    </button>
-                  ))}
+              {/* Code insertion section (only for new mode) */}
+              {generationMode === GenerationMode.NEW && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="code-insertion" className="flex items-center space-x-2 cursor-pointer">
+                      <span>Include existing code in generation</span>
+                    </Label>
+                    <Switch 
+                      id="code-insertion"
+                      checked={useCodeInsertion}
+                      onCheckedChange={setUseCodeInsertion}
+                    />
+                  </div>
+                  
+                  {useCodeInsertion && (
+                    <div className="space-y-2 mt-2">
+                      <Label htmlFor="insert-code">Verse code to include:</Label>
+                      <Textarea
+                        id="insert-code"
+                        placeholder="# Paste existing Verse code here to integrate it with the generated code..."
+                        className="h-40 bg-zinc-900 border-zinc-700 text-white font-mono resize-none"
+                        value={insertCode}
+                        onChange={(e) => setInsertCode(e.target.value)}
+                      />
+                      <p className="text-xs text-zinc-500">
+                        <FileCode size={14} className="inline mr-1" />
+                        The AI will integrate this code into the generated solution
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
+              
+              {/* Example prompts section (only for new mode) */}
+              {generationMode === GenerationMode.NEW && (
+                <div className="space-y-2">
+                  <Label>Example Prompts</Label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {promptExamples.map((example, index) => (
+                      <button
+                        key={index}
+                        className="text-left p-2 border border-zinc-800 rounded-md hover:bg-zinc-800 text-zinc-300 text-sm transition-colors"
+                        onClick={() => handleSelectPromptExample(example)}
+                      >
+                        <Brain size={14} className="inline mr-2 text-verse-blue" />
+                        {example}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Model and temperature settings */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -288,6 +369,16 @@ const VerseGPT: React.FC = () => {
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Generating Code...
+                  </>
+                ) : generationMode === GenerationMode.CONTINUE ? (
+                  <>
+                    <ArrowRightCircle className="mr-2 h-4 w-4" />
+                    Continue Code
+                  </>
+                ) : generationMode === GenerationMode.EDIT ? (
+                  <>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Code
                   </>
                 ) : (
                   <>
